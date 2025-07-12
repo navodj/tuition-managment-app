@@ -38,9 +38,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import com.example.tuitioninfoapp.services.NotificationService;
 
 public class AssignStudentsFragment extends Fragment {
 
+    private NotificationService notificationService;
     private Spinner spinnerCourses, spinnerTeachers;
     private RecyclerView rvStudents;
     private Button btnSave;
@@ -70,6 +72,8 @@ public class AssignStudentsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        notificationService = new NotificationService();
+
         // Initialize views
         spinnerCourses = view.findViewById(R.id.spinner_courses);
         spinnerTeachers = view.findViewById(R.id.spinner_teachers);
@@ -92,6 +96,8 @@ public class AssignStudentsFragment extends Fragment {
         loadCourses();
         loadTeachers();
         loadStudents();
+
+        notificationService = new NotificationService();
 
         // Course selection handler
         spinnerCourses.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -258,7 +264,7 @@ public class AssignStudentsFragment extends Fragment {
     private void processBatchOperations(DocumentSnapshot teacherDoc) {
         WriteBatch batch = db.batch();
 
-        // 1. Create a new assignment document
+        // 1. Create assignment document
         DocumentReference assignmentRef = db.collection("assignments").document();
         Assignment newAssignment = new Assignment();
         newAssignment.setId(assignmentRef.getId());
@@ -267,20 +273,21 @@ public class AssignStudentsFragment extends Fragment {
         newAssignment.setStudentIds(new ArrayList<>(studentAdapter.getSelectedStudents()));
         batch.set(assignmentRef, newAssignment);
 
-        // 2. Update course document
+        // 2. Update course
         DocumentReference courseRef = db.collection("courses").document(selectedCourseId);
         Map<String, Object> courseUpdates = new HashMap<>();
         courseUpdates.put("teacherId", selectedTeacherId);
         courseUpdates.put("studentIds", newAssignment.getStudentIds());
         batch.update(courseRef, courseUpdates);
 
-        // 3. Update students' courses
+        // 3. Update students' enrolled courses
+        List<String> assignedStudentIds = newAssignment.getStudentIds();
         for (User student : studentList) {
-            DocumentReference studentRef = db.collection("users").document(student.getId());
-            List<String> studentCourses = student.getCourses() != null ?
-                    new ArrayList<>(student.getCourses()) : new ArrayList<>();
+            String studentId = student.getId();
+            DocumentReference studentRef = db.collection("users").document(studentId);
+            List<String> studentCourses = student.getCourses() != null ? new ArrayList<>(student.getCourses()) : new ArrayList<>();
 
-            if (newAssignment.getStudentIds().contains(student.getId())) {
+            if (assignedStudentIds.contains(studentId)) {
                 if (!studentCourses.contains(selectedCourseId)) {
                     studentCourses.add(selectedCourseId);
                     batch.update(studentRef, "courses", studentCourses);
@@ -293,33 +300,37 @@ public class AssignStudentsFragment extends Fragment {
             }
         }
 
-        // 4. Update teacher's courses
+        // 4. Update teacher's course list
         if (teacherDoc.exists()) {
             User teacher = teacherDoc.toObject(User.class);
             if (teacher != null) {
-                List<String> teacherCourses = teacher.getCourses() != null ?
-                        new ArrayList<>(teacher.getCourses()) : new ArrayList<>();
-
+                List<String> teacherCourses = teacher.getCourses() != null ? new ArrayList<>(teacher.getCourses()) : new ArrayList<>();
                 if (!teacherCourses.contains(selectedCourseId)) {
                     teacherCourses.add(selectedCourseId);
-                    batch.update(db.collection("users").document(selectedTeacherId),
-                            "courses", teacherCourses);
+                    batch.update(db.collection("users").document(selectedTeacherId), "courses", teacherCourses);
                 }
             }
         }
 
-        // Commit batch
+        // 🔔 Commit and send notification
         batch.commit().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 Toast.makeText(getContext(), "Assignment saved successfully", Toast.LENGTH_SHORT).show();
-                // Refresh the assignment list
                 loadAssignments();
+
+                // Send notifications to assigned students
+                for (String studentId : newAssignment.getStudentIds()) {
+                    String msg = "You've been assigned to the course: " + currentCourse.getName();
+                    notificationService.sendNotification(studentId, msg);
+                }
+
             } else {
                 Toast.makeText(getContext(), "Failed to save assignment", Toast.LENGTH_SHORT).show();
                 Log.e("AssignStudents", "Batch commit failed", task.getException());
             }
         });
     }
+
 
     private void loadAssignments() {
         db.collection("assignments").get().addOnCompleteListener(task -> {
@@ -338,5 +349,26 @@ public class AssignStudentsFragment extends Fragment {
             }
         });
     }
+
+    private void sendNotificationsToStudents(String courseName, List<String> studentIds) {
+        String title = "New Course Assigned";
+        String message = "You have been assigned to course: " + courseName;
+        long timestamp = System.currentTimeMillis();
+
+        for (String studentId : studentIds) {
+            // Save in Firestore (for NotificationsFragment)
+            Map<String, Object> notification = new HashMap<>();
+            notification.put("title", title);
+            notification.put("message", message);
+            notification.put("timestamp", timestamp);
+
+            db.collection("users").document(studentId)
+                    .collection("notifications").add(notification);
+
+            // Send push notification (Firebase token logic should be handled in NotificationService)
+            notificationService.sendNotificationToUser(studentId, title, message);
+        }
+    }
+
 
 }

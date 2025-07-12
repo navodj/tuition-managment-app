@@ -20,14 +20,16 @@ public class Course {
     // Constructors
     public Course() {}
 
-    public Course(String id, String name) {
+    public Course(String id, String name, String materialUrl) {
         this.id = id;
         this.name = name;
         this.studentIds = new ArrayList<>();
+        this.materialUrl = materialUrl;
     }
 
     // Getters and setters
     public String getId() { return id; }
+
     public String getName() { return name; }
     public String getTeacherId() { return teacherId; }
     public List<String> getStudentIds() { return studentIds; }

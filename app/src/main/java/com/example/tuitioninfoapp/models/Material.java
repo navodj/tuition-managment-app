@@ -1,19 +1,31 @@
 package com.example.tuitioninfoapp.models;
 
-import java.util.Date;
 public class Material {
-    private String url;
-    private String fileName;
+    private String courseName;
+    private String materialUrl;
 
-    // Firebase requires empty constructor
-    public Material() {}
-
-    public Material(String url, String fileName) {
-        this.url = url;
-        this.fileName = fileName;
+    public Material() {
+        // Required empty constructor for Firebase
     }
 
-    // Getters
-    public String getUrl() { return url; }
-    public String getFileName() { return fileName; }
+    public Material(String courseName, String materialUrl) {
+        this.courseName = courseName;
+        this.materialUrl = materialUrl;
+    }
+
+    public String getCourseName() {
+        return courseName;
+    }
+
+    public void setCourseName(String courseName) {
+        this.courseName = courseName;
+    }
+
+    public String getMaterialUrl() {
+        return materialUrl;
+    }
+
+    public void setMaterialUrl(String materialUrl) {
+        this.materialUrl = materialUrl;
+    }
 }

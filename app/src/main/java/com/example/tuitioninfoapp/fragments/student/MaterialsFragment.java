@@ -1,76 +1,70 @@
 package com.example.tuitioninfoapp.fragments.student;
 
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ProgressBar;
-import android.widget.TextView;
-import android.widget.Toast;
-
+import android.view.*;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.*;
 import com.example.tuitioninfoapp.R;
 import com.example.tuitioninfoapp.adapters.MaterialAdapter;
-import com.example.tuitioninfoapp.models.Course;
 import com.example.tuitioninfoapp.models.Material;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+
 public class MaterialsFragment extends Fragment {
+
     private RecyclerView recyclerView;
     private MaterialAdapter adapter;
-    private List<Course> courseList;
-    private FirebaseFirestore db;
+    private List<Material> materialList;
+
+    private FirebaseFirestore firestore;
     private FirebaseAuth auth;
 
+    public MaterialsFragment() {}
+
+    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_materials, container, false);
 
-        // Initialize Firebase
-        db = FirebaseFirestore.getInstance();
-        auth = FirebaseAuth.getInstance();
-
-        // Setup RecyclerView
-        recyclerView = view.findViewById(R.id.recyclerView);
+        recyclerView = view.findViewById(R.id.materials_recycler);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        courseList = new ArrayList<>();
-        adapter = new MaterialAdapter(courseList, getContext());
+        materialList = new ArrayList<>();
+        adapter = new MaterialAdapter(getContext(), materialList);
         recyclerView.setAdapter(adapter);
 
-        // Load courses
-        loadStudentCourses();
+        firestore = FirebaseFirestore.getInstance();
+        auth = FirebaseAuth.getInstance();
+
+        fetchMaterialsForStudent();
+
         return view;
     }
 
-    private void loadStudentCourses() {
-        String studentId = auth.getCurrentUser().getUid();
-        db.collection("courses")
-                .whereArrayContains("studentIds", studentId)
+    private void fetchMaterialsForStudent() {
+        String uid = auth.getCurrentUser().getUid();
+
+        firestore.collection("courses")
+                .whereArrayContains("studentIds", uid)
                 .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        courseList.clear();
-                        for (QueryDocumentSnapshot document : task.getResult()) {
-                            Course course = document.toObject(Course.class);
-                            course.setId(document.getId());
-                            courseList.add(course);
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    materialList.clear();
+                    for (DocumentSnapshot doc : queryDocumentSnapshots) {
+                        String courseName = doc.getString("name");
+                        String materialUrl = doc.getString("material");
+
+                        if (materialUrl != null && !materialUrl.isEmpty()) {
+                            materialList.add(new Material(courseName, materialUrl));
                         }
-                        adapter.notifyDataSetChanged();
-                    } else {
-                        Toast.makeText(getContext(), "Error loading courses", Toast.LENGTH_SHORT).show();
                     }
-                });
+                    adapter.notifyDataSetChanged();
+                })
+                .addOnFailureListener(e -> Log.e("MaterialsFragment", "Error fetching materials", e));
     }
 }
