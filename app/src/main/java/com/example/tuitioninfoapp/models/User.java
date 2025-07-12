@@ -1,38 +1,46 @@
 package com.example.tuitioninfoapp.models;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class User {
-    private String uid;
+    private String id;
     private String name;
     private String email;
     private String role;
+    private List<String> courses;
 
-    public User() {}  // Needed for Firestore
+    @Override
+    public String toString() {
+        return name; // Display user name in spinner
+    }
 
-    public User(String uid, String name, String email, String role) {
-        this.uid = uid;
+    // Constructors
+    public User() {}
+
+    public User(String id, String name, String email, String role) {
+        this.id = id;
         this.name = name;
         this.email = email;
         this.role = role;
-
-
+        this.courses = new ArrayList<>();
     }
-    private String assignedTeacherId;
-    public String getAssignedTeacherId() { return assignedTeacherId; }
-    public void setAssignedTeacherId(String assignedTeacherId) { this.assignedTeacherId = assignedTeacherId; }
 
-    public String getUid() { return uid; }
+    // Getters and setters
+    public String getId() { return id; }
     public String getName() { return name; }
     public String getEmail() { return email; }
     public String getRole() { return role; }
+    public List<String> getCourses() { return courses; }
 
-    private boolean selected;
+    public void setCourses(List<String> courses) { this.courses = courses; }
 
-    public boolean isSelected() {
-        return selected;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public void setSelected(boolean selected) {
-        this.selected = selected;
+    public String getUid() {
+        return id;
+
     }
-
-
 }

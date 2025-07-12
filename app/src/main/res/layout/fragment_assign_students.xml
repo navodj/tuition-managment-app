@@ -1,40 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:fillViewport="true">
 
-    <TextView
-        android:text="Select Teacher"
-        android:textSize="16sp"
-        android:layout_marginBottom="8dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
-    <Spinner
-        android:id="@+id/teacherSpinner"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
-
-    <TextView
-        android:text="Select Students"
-        android:textSize="16sp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="8dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/studentRecyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"/>
-
-    <Button
-        android:id="@+id/assignButton"
-        android:layout_marginTop="12dp"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Assign Selected Students"/>
-</LinearLayout>
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Course Selection -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Select Course"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
+
+        <Spinner
+            android:id="@+id/spinner_courses"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <!-- Teacher Selection -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Select Teacher"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp"/>
+
+        <Spinner
+            android:id="@+id/spinner_teachers"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <!-- Student Selection -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Select Students"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_students"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:scrollbars="vertical"/>
+
+        <Button
+            android:id="@+id/btn_save_assignment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Save Assignment"
+            android:layout_marginTop="16dp"
+            android:textColor="@android:color/white"/>
+
+        <!-- Assignment List Header -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="All Course Assignments"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Assignments List -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_assignments"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="vertical"/>
+    </LinearLayout>
+</ScrollView>

@@ -1,66 +1,131 @@
 package com.example.tuitioninfoapp.fragments.student;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.example.tuitioninfoapp.R;
+import com.example.tuitioninfoapp.adapters.MaterialAdapter;
+import com.example.tuitioninfoapp.models.Material;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link MaterialsFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import java.util.ArrayList;
+import java.util.List;
 public class MaterialsFragment extends Fragment {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public MaterialsFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment MaterialsFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static MaterialsFragment newInstance(String param1, String param2) {
-        MaterialsFragment fragment = new MaterialsFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
+    private RecyclerView recyclerView;
+    private MaterialAdapter adapter;
+    private List<Material> materialList = new ArrayList<>();
+    private ProgressBar progressBar;
+    private TextView emptyView;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_materials, container, false);
+
+        recyclerView = view.findViewById(R.id.materialsRecyclerView);
+        progressBar = view.findViewById(R.id.progressBar);
+        emptyView = view.findViewById(R.id.emptyTextView);
+
+        setupRecyclerView();
+        loadMaterials();
+
+        return view;
+    }
+
+    private void setupRecyclerView() {
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        adapter = new MaterialAdapter(materialList, material -> {
+            // Open material in browser or appropriate viewer
+            openMaterial(material);
+        });
+        recyclerView.setAdapter(adapter);
+    }
+
+    private void loadMaterials() {
+        String studentId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        progressBar.setVisibility(View.VISIBLE);
+        materialList.clear();
+
+        // Query the top-level 'materials' collection
+        db.collection("materials")
+                .whereArrayContains("studentIds", studentId)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<String> courseIds = new ArrayList<>();
+                    for (QueryDocumentSnapshot courseDoc : queryDocumentSnapshots) {
+                        courseIds.add(courseDoc.getId());
+                    }
+
+                    if (courseIds.isEmpty()) {
+                        showEmptyState();
+                        return;
+                    }
+
+                    // Now get materials from the subcollection for each course
+                    for (String courseId : courseIds) {
+                        db.collection("materials/" + courseId + "/materials")
+                                .get()
+                                .addOnSuccessListener(materialSnapshots -> {
+                                    for (QueryDocumentSnapshot materialDoc : materialSnapshots) {
+                                        Material material = materialDoc.toObject(Material.class);
+                                        material.setId(materialDoc.getId());
+                                        material.setCourseId(courseId);
+                                        materialList.add(material);
+                                    }
+                                    updateUI();
+                                })
+                                .addOnFailureListener(e -> {
+                                    Log.e("MaterialsFragment", "Error loading materials for course: " + courseId, e);
+                                });
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("MaterialsFragment", "Error loading courses", e);
+                    progressBar.setVisibility(View.GONE);
+                });
+    }
+
+    private void updateUI() {
+        progressBar.setVisibility(View.GONE);
+        if (materialList.isEmpty()) {
+            showEmptyState();
+        } else {
+            adapter.notifyDataSetChanged();
+            recyclerView.setVisibility(View.VISIBLE);
+            emptyView.setVisibility(View.GONE);
         }
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_materials2, container, false);
+    private void showEmptyState() {
+        recyclerView.setVisibility(View.GONE);
+        emptyView.setVisibility(View.VISIBLE);
+    }
+
+    private void openMaterial(Material material) {
+        // Convert gs:// URL to https:// URL for viewing
+        String httpsUrl = material.getFileUrl()
+                .replace("gs://", "https://firebasestorage.googleapis.com/v0/b/")
+                .replaceFirst("/", ".appspot.com/o/")
+                + "?alt=media";
+
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(httpsUrl));
+        startActivity(intent);
     }
 }

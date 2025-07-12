@@ -34,8 +34,11 @@ public class MyAttendanceFragment extends Fragment {
 
         generateQRCode();
 
+
         return view;
+
     }
+
 
     private void generateQRCode() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();

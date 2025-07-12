@@ -1,28 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:padding="12dp"
-    android:orientation="vertical"
-    android:background="#FFFFFF"
-    android:layout_marginBottom="8dp"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@drawable/card_background"
+    android:layout_marginBottom="8dp">
 
     <TextView
-        android:id="@+id/assignmentCourse"
+        android:id="@+id/tv_course_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:textStyle="bold"
+        android:textSize="18sp"
+        android:layout_marginBottom="8dp"/>
+
+    <TextView
+        android:id="@+id/tv_teacher_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:textSize="16sp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_marginBottom="8dp"/>
 
-    <TextView
-        android:id="@+id/assignmentTeacher"
-        android:textSize="14sp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
-    <TextView
-        android:id="@+id/assignmentStudents"
-        android:textSize="14sp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        <TextView
+            android:id="@+id/tv_student_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Students: 0"
+            android:textStyle="bold"
+            android:layout_marginEnd="8dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="▶"
+            android:textSize="12sp"/>
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_assignment_students"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"/>
 </LinearLayout>
