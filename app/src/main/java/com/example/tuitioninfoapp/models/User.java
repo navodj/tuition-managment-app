@@ -13,6 +13,7 @@ public class User {
         this.email = email;
         this.role = role;
 
+
     }
     private String assignedTeacherId;
     public String getAssignedTeacherId() { return assignedTeacherId; }
@@ -22,4 +23,16 @@ public class User {
     public String getName() { return name; }
     public String getEmail() { return email; }
     public String getRole() { return role; }
+
+    private boolean selected;
+
+    public boolean isSelected() {
+        return selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
+    }
+
+
 }

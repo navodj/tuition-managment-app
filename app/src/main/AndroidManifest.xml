@@ -10,6 +10,11 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
+
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -20,6 +25,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TuitionInfoApp"
         tools:targetApi="31">
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyD9ASXtXaU6b_AaHGqvn7xyfPvf9o4spgc"/>
+
+
         <activity
             android:name=".CustomScannerActivity"
             android:screenOrientation="portrait"
