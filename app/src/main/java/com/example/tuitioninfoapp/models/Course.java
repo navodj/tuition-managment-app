@@ -9,6 +9,9 @@ public class Course {
     private String name;
     private String teacherId;
     private List<String> studentIds;
+    private String materialUrl;
+
+
     @Override
     public String toString() {
         return name; // Display course name in spinner
@@ -34,6 +37,7 @@ public class Course {
 
     public void setId(String id) {
         this.id = id;
-
     }
+    public String getMaterialUrl() { return materialUrl; }
+    public void setMaterialUrl(String materialUrl) { this.materialUrl = materialUrl; }
 }

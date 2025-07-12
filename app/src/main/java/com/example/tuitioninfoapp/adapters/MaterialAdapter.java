@@ -1,32 +1,34 @@
 package com.example.tuitioninfoapp.adapters;
 
+import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+import android.content.ActivityNotFoundException;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.tuitioninfoapp.R;
+import com.example.tuitioninfoapp.models.Course;
 import com.example.tuitioninfoapp.models.Material;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
 public class MaterialAdapter extends RecyclerView.Adapter<MaterialAdapter.ViewHolder> {
-    private List<Material> materials;
-    private OnMaterialClickListener listener;
+    private List<Course> courseList;
+    private Context context;
 
-    public interface OnMaterialClickListener {
-        void onMaterialClick(Material material);
-    }
-
-    public MaterialAdapter(List<Material> materials, OnMaterialClickListener listener) {
-        this.materials = materials;
-        this.listener = listener;
+    public MaterialAdapter(List<Course> courseList, Context context) {
+        this.courseList = courseList;
+        this.context = context;
     }
 
     @NonNull
@@ -39,60 +41,44 @@ public class MaterialAdapter extends RecyclerView.Adapter<MaterialAdapter.ViewHo
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Material material = materials.get(position);
+        Course course = courseList.get(position);
+        holder.courseName.setText(course.getName());
 
-        // Set title - handle empty titles
-        String displayTitle = !TextUtils.isEmpty(material.getTitle()) ?
-                material.getTitle() :
-                "Material " + (position + 1);
-        holder.title.setText(displayTitle);
+        // Handle PDF viewing
+        holder.viewButton.setOnClickListener(v -> {
+            if (course.getMaterialUrl() != null && !course.getMaterialUrl().isEmpty()) {
+                openPdf(course.getMaterialUrl());
+            } else {
+                Toast.makeText(context, "No material available", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 
-        // Set file type indicator
-        String fileType = !TextUtils.isEmpty(material.getType()) ?
-                material.getType().toLowerCase() :
-                "file";
+    private void openPdf(String pdfUrl) {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setDataAndType(Uri.parse(pdfUrl), "application/pdf");
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
-        int iconRes = R.drawable.ic_document; // Default
-        switch (fileType) {
-            case "pdf": iconRes = R.drawable.ic_pdf; break;
-            case "doc":
-            case "docx": iconRes = R.drawable.ic_word; break;
-            case "ppt":
-            case "pptx": iconRes = R.drawable.ic_powerpoint; break;
-//            case "xls":
-//            case "xlsx": iconRes = R.drawable.ic_excel; break;
-//            case "jpg":
-//            case "jpeg":
-//            case "png": iconRes = R.drawable.ic_image; break;
+        try {
+            context.startActivity(intent);
+        } catch (ActivityNotFoundException e) {
+            Toast.makeText(context, "No PDF viewer installed", Toast.LENGTH_SHORT).show();
         }
-        holder.icon.setImageResource(iconRes);
-
-        // Set file name from URL
-        if (!TextUtils.isEmpty(material.getFileUrl())) {
-            Uri uri = Uri.parse(material.getFileUrl());
-            String fileName = uri.getLastPathSegment();
-            holder.fileName.setText(fileName);
-        } else {
-            holder.fileName.setText("Unknown file");
-        }
-
-        holder.itemView.setOnClickListener(v -> listener.onMaterialClick(material));
     }
 
     @Override
     public int getItemCount() {
-        return materials.size();
+        return courseList.size();
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView title, fileName;
-        ImageView icon;
+        TextView courseName;
+        Button viewButton;
 
-        public ViewHolder(@NonNull View itemView) {
+        public ViewHolder(View itemView) {
             super(itemView);
-            title = itemView.findViewById(R.id.materialTitle);
-            fileName = itemView.findViewById(R.id.materialFileName);
-            icon = itemView.findViewById(R.id.materialIcon);
+            courseName = itemView.findViewById(R.id.courseName);
+            viewButton = itemView.findViewById(R.id.viewButton);
         }
     }
 }
