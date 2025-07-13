@@ -36,16 +36,15 @@
         <item>Not Specified</item>
     </string-array>
 
-<!--        <string name="select_course_prompt">Select Course</string>-->
-<!--        <string name="select_teacher_prompt">Select Teacher</string>-->
-<!--    <string name="user_not_logged_in">User not logged in</string>-->
-<!--    <string name="attendance_marked">✅ Attendance marked as: %1$s</string>-->
-<!--    <string name="attendance_not_marked">❌ Attendance not marked yet.</string>-->
-<!--    <string name="failed_to_check_attendance">⚠️ Failed to check attendance.</string>-->
+    <!--        <string name="select_course_prompt">Select Course</string>-->
+    <!--        <string name="select_teacher_prompt">Select Teacher</string>-->
+    <!--    <string name="user_not_logged_in">User not logged in</string>-->
+    <!--    <string name="attendance_marked">✅ Attendance marked as: %1$s</string>-->
+    <!--    <string name="attendance_not_marked">❌ Attendance not marked yet.</string>-->
+    <!--    <string name="failed_to_check_attendance">⚠️ Failed to check attendance.</string>-->
 
     <string name="download">Download</string>
     <string name="no_materials_found">No materials available</string>
-
 
 
 </resources>

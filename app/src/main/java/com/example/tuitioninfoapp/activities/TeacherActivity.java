@@ -10,6 +10,7 @@ import com.example.tuitioninfoapp.fragments.teacher.AttendanceFragment;
 import com.example.tuitioninfoapp.fragments.teacher.AssignmentsFragment;
 import com.example.tuitioninfoapp.fragments.teacher.MaterialsFragment;
 import com.example.tuitioninfoapp.fragments.teacher.ProfileFragment;
+import com.example.tuitioninfoapp.fragments.teacher.TMaterialFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class TeacherActivity extends AppCompatActivity {
@@ -35,7 +36,7 @@ public class TeacherActivity extends AppCompatActivity {
             } else if (itemId == R.id.nav_assignments) {
                 selected = new AssignmentsFragment();
             } else if (itemId == R.id.nav_materials) {
-                selected = new MaterialsFragment();
+                selected = new TMaterialFragment();
             } else if (itemId == R.id.nav_profile) {
                 selected = new ProfileFragment();
             }
